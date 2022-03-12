@@ -149,6 +149,14 @@ public:
   */
   bool getScanData(scanData* scan_data);
 
+  //added
+  /*!
+  * @brief Receive single scan string message.
+  * @return Data in string format
+  */
+  std::string getScanStringData();
+  //added
+
   /*!
   * @brief Save data permanently.
   * Parameters are saved in the EEPROM of the LMS and will also be available after the device is switched off and on again.

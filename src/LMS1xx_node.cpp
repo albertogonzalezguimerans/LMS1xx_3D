@@ -28,6 +28,7 @@
 #include "sensor_msgs/LaserScan.h"
 #include <limits>
 #include <string>
+#include "std_msgs/String.h" //added
 
 #define DEG2RAD M_PI/180.0
 
@@ -50,6 +51,7 @@ int main(int argc, char **argv)
   ros::NodeHandle nh;
   ros::NodeHandle n("~");
   ros::Publisher scan_pub = nh.advertise<sensor_msgs::LaserScan>("scan", 1);
+  ros::Publisher scan_string = nh.advertise<std_msgs::String>("scan_string", 1); //added
 
   n.param<std::string>("host", host, "192.168.1.2");
   n.param<std::string>("frame_id", frame_id, "laser");
@@ -118,8 +120,8 @@ int main(int argc, char **argv)
     dataCfg.outputChannel = 1;
     dataCfg.remission = true;
     dataCfg.resolution = 1;
-    dataCfg.encoder = 0;
-    dataCfg.position = false;
+    dataCfg.encoder = 3;
+    dataCfg.position = true;
     dataCfg.deviceName = false;
     dataCfg.outputInterval = 1;
 
@@ -198,6 +200,15 @@ int main(int argc, char **argv)
         {
           scan_msg.intensities[i] = data.rssi1[i];
         }
+
+        //added
+        std_msgs::String stringData;
+        ROS_DEBUG("Reading scan string data.");
+        stringData.data = laser.getScanStringData(); 
+
+        ROS_DEBUG("Publishing scan string data.");
+        scan_string.publish(stringData);
+        //added
 
         ROS_DEBUG("Publishing scan data.");
         scan_pub.publish(scan_msg);

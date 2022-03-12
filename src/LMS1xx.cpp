@@ -32,6 +32,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include "std_msgs/String.h" //added
 
 #include "LMS1xx/LMS1xx.h"
 #include "console_bridge/console.h"
@@ -280,6 +281,37 @@ bool LMS1xx::getScanData(scanData* scan_data)
   }
 }
 
+//added
+std::string LMS1xx::getScanStringData()
+{
+  fd_set rfds;
+  FD_ZERO(&rfds);
+  FD_SET(socket_fd_, &rfds);
+
+  // Block a total of up to 100ms waiting for more data from the laser.
+  while (1)
+  {
+    // Would be great to depend on linux's behaviour of updating the timeval, but unfortunately
+    // that's non-POSIX (doesn't work on OS X, for example).
+    struct timeval tv;
+    tv.tv_sec = 0;
+    tv.tv_usec = 100000;
+
+    logDebug("entering select()", tv.tv_usec);
+    int retval = select(socket_fd_ + 1, &rfds, NULL, NULL, &tv);
+    logDebug("returned %d from select()", retval);
+    if (retval)
+    {
+      buffer_.readFrom(socket_fd_);
+
+      std::string scan_string_data = buffer_.getNextBuffer();
+
+      buffer_.popLastBuffer();
+      return scan_string_data;
+    }
+  }
+}
+//added
 
 void LMS1xx::parseScanData(char* buffer, scanData* data)
 {
