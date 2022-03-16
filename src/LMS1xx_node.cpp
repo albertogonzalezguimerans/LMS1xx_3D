@@ -179,8 +179,9 @@ int main(int argc, char **argv)
       ++scan_msg.header.seq;
 
       scanData data;
+      std::string stringData;
       ROS_DEBUG("Reading scan data.");
-      if (laser.getScanData(&data))
+      if (laser.getScanData(&data, &stringData))
       {
         for (int i = 0; i < data.dist_len1; i++)
         {
@@ -202,14 +203,12 @@ int main(int argc, char **argv)
         }
 
         //added
-        std_msgs::String stringData;
-        ROS_DEBUG("Reading scan string data.");
-        stringData.data = laser.getScanStringData(); 
-
+        std_msgs::String topicData;
+        topicData.data = stringData;
+        
         ROS_DEBUG("Publishing scan string data.");
-        scan_string.publish(stringData);
-        //added
-
+        scan_string.publish(topicData);
+        
         ROS_DEBUG("Publishing scan data.");
         scan_pub.publish(scan_msg);
       }

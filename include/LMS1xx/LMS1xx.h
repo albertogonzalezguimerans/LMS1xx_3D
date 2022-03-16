@@ -147,15 +147,7 @@ public:
   * @return true if scan was read successfully, false if error or timeout. False implies that higher level
   *         logic should take correct action such as reopening the connection.
   */
-  bool getScanData(scanData* scan_data);
-
-  //added
-  /*!
-  * @brief Receive single scan string message.
-  * @return Data in string format
-  */
-  std::string getScanStringData();
-  //added
+  bool getScanData(scanData* scan_data, std::string* scanStringData);
 
   /*!
   * @brief Save data permanently.
