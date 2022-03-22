@@ -15,6 +15,8 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 add_executable(LMS1xx_node src/LMS1xx_node.cpp)
 target_link_libraries(LMS1xx_node LMS1xx ${catkin_LIBRARIES})
 
+add_executable(Listener src/Listener.cpp)
+target_link_libraries(Listener ${catkin_LIBRARIES})
 
 install(TARGETS LMS1xx LMS1xx_node
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
