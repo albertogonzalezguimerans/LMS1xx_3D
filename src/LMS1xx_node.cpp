@@ -181,7 +181,7 @@ int main(int argc, char **argv)
       scanData data;
       std::string stringData;
       ROS_DEBUG("Reading scan data.");
-      if (laser.getScanData(&data, &stringData))
+      if (laser.getScanData(&data, stringData))
       {
         for (int i = 0; i < data.dist_len1; i++)
         {
@@ -202,9 +202,8 @@ int main(int argc, char **argv)
           scan_msg.intensities[i] = data.rssi1[i];
         }
 
-        //added
         std_msgs::String topicData;
-        topicData.data = stringData;
+        topicData.data = stringData; //Si falla probar con stringData.c_str()
         
         ROS_DEBUG("Publishing scan string data.");
         scan_string.publish(topicData);
