@@ -1,7 +1,7 @@
 <launch>
-  <arg name="host" default="192.168.1.14" />
+  <arg name="host" default="192.168.2.1" />
   <arg name="publish_min_range_as_inf" default="false" />
-  <node pkg="lms1xx" name="lms1xx" type="LMS1xx_node">
+  <node pkg="lms1xx_3d" name="lms1xx_3d" type="LMS1xx_node">
     <param name="host" value="$(arg host)" />
     <param name="publish_min_range_as_inf" value="$(arg publish_min_range_as_inf)" />
   </node>

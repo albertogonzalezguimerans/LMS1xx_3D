@@ -22,7 +22,7 @@
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-#Use: rosrun lms1xx find_sick
+#Use: rosrun lms1xx_3d find_sick
 
 import sys
 import socket

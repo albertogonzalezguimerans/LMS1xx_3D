@@ -241,7 +241,7 @@ void LMS1xx::scanContinous(int start)
   logDebug("RX: %s", buf);
 }
 
-bool LMS1xx::getScanData(scanData* scan_data, std::string& scanStringData)
+bool LMS1xx::getScanData(scanData* scan_data, std::string* scanStringData)
 {
   fd_set rfds;
   FD_ZERO(&rfds);
@@ -268,7 +268,8 @@ bool LMS1xx::getScanData(scanData* scan_data, std::string& scanStringData)
       char* buffer_data = buffer_.getNextBuffer();
 
       std::string auxString(buffer_data);
-      scanStringData = auxString;
+      //auxString = *
+      *scanStringData = (std::string )buffer_data;
 
       if (buffer_data)
       {

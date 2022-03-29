@@ -22,8 +22,8 @@
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-#Use: rosrun lms1xx set_sick_ip <MAC_ADDR> <DESIRED_IP_ADDR>
-#e.g. rosrun lms1xx set_sick_ip 000677206c35 192.168.1.17
+#Use: rosrun lms1xx_3d set_sick_ip <MAC_ADDR> <DESIRED_IP_ADDR>
+#e.g. rosrun lms1xx_3d set_sick_ip 000677206c35 192.168.1.17
 
 import sys
 import socket
@@ -44,7 +44,7 @@ try:
     sys.argv[2]
 except IndexError:
     print("Not enough arguments.")
-    print("Use: rosrun lms1xx set_sick_ip <MAC_ADDR> <DESIRED_IP_ADDR>")
+    print("Use: rosrun lms1xx_3d set_sick_ip <MAC_ADDR> <DESIRED_IP_ADDR>")
     sys.exit()
 
 #set variables

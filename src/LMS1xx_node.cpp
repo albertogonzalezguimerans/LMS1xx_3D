@@ -47,7 +47,7 @@ int main(int argc, char **argv)
   bool inf_range;
   int port;
 
-  ros::init(argc, argv, "lms1xx");
+  ros::init(argc, argv, "lms1xx_3d");
   ros::NodeHandle nh;
   ros::NodeHandle n("~");
   ros::Publisher scan_pub = nh.advertise<sensor_msgs::LaserScan>("scan", 1);
@@ -181,7 +181,7 @@ int main(int argc, char **argv)
       scanData data;
       std::string stringData;
       ROS_DEBUG("Reading scan data.");
-      if (laser.getScanData(&data, stringData))
+      if (laser.getScanData(&data, &stringData))
       {
         for (int i = 0; i < data.dist_len1; i++)
         {
@@ -203,7 +203,7 @@ int main(int argc, char **argv)
         }
 
         std_msgs::String topicData;
-        topicData.data = stringData; //Si falla probar con stringData.c_str()
+        topicData.data = stringData.c_str(); //Si falla probar con stringData.c_str()
         
         ROS_DEBUG("Publishing scan string data.");
         scan_string.publish(topicData);
