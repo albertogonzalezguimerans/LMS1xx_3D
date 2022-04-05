@@ -267,9 +267,9 @@ bool LMS1xx::getScanData(scanData* scan_data, std::string* scanStringData)
       // otherwise will return null.
       char* buffer_data = buffer_.getNextBuffer();
 
-      std::string auxString(buffer_data);
+      //std::string auxString(buffer_data);
       //auxString = *
-      *scanStringData = (std::string )buffer_data;
+      //*scanStringData = (std::string )buffer_data;
 
       if (buffer_data)
       {
