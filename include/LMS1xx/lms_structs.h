@@ -59,6 +59,12 @@ struct scanCfg
   int stopAngle;
 };
 
+struct Encoder_t
+{
+  uint32_t Position;
+  uint16_t Speed;
+};
+
 /*!
 * @class scanDataCfg
 * @brief Structure containing scan data configuration.
@@ -151,8 +157,18 @@ struct scanOutputRange
 *
 * @author Konrad Banachowicz
 */
+
+//Modificar aqui para añadir nuevos datos
 struct scanData
 {
+
+  int ScanCounter;
+
+  int NumberEncoders;
+  Encoder_t Encoder[3];
+
+  int NumberChannels16Bit;
+  int NumberChannels8Bit;
 
   /*!
    * @brief Number of samples in dist1.

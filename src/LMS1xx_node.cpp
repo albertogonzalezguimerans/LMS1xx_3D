@@ -30,7 +30,37 @@
 #include <string>
 #include "std_msgs/String.h" //added
 
+#include <tf2_ros/transform_broadcaster.h>
+#include <geometry_msgs/TransformStamped.h>  
+#include <sensor_msgs/LaserScan.h>
+#include <tf2/LinearMath/Quaternion.h>  
+
 #define DEG2RAD M_PI/180.0
+
+void publicarTF(float phi){
+  static tf2_ros::TransformBroadcaster br;
+  geometry_msgs::TransformStamped transformStamped;
+  // static double theta = 0.0;
+  static double theta = phi;
+  transformStamped.header.stamp = ros::Time::now();
+  transformStamped.header.frame_id = "map";
+  transformStamped.child_frame_id = "laser"; // CVR 2022-03-22 //  "laser_frame";
+
+  // TODO: usar parámetros ROS
+  transformStamped.transform.translation.x = 0.00248743;
+  transformStamped.transform.translation.y = -1.05702;
+  transformStamped.transform.translation.z = 0.60373;
+  tf2::Quaternion q;
+  //0.0180352  0.0741931   0.053058
+  q.setRPY(theta, 0 , 0);
+  transformStamped.transform.rotation.x = q.x();
+  transformStamped.transform.rotation.y = q.y();
+  transformStamped.transform.rotation.z = q.z();
+  transformStamped.transform.rotation.w = q.w();
+  theta=phi;
+  //printf("%f\n",theta);
+  br.sendTransform(transformStamped);
+}
 
 int main(int argc, char **argv)
 {
@@ -40,6 +70,7 @@ int main(int argc, char **argv)
   scanOutputRange outputRange;
   scanDataCfg dataCfg;
   sensor_msgs::LaserScan scan_msg;
+  float angle_scan;
 
   // parameters
   std::string host;
@@ -120,7 +151,7 @@ int main(int argc, char **argv)
     dataCfg.outputChannel = 1;
     dataCfg.remission = true;
     dataCfg.resolution = 1;
-    dataCfg.encoder = 3;
+    dataCfg.encoder = 1;
     dataCfg.position = true;
     dataCfg.deviceName = false;
     dataCfg.outputInterval = 1;
@@ -181,7 +212,7 @@ int main(int argc, char **argv)
       scanData data;
       std::string stringData;
       ROS_DEBUG("Reading scan data.");
-      if (laser.getScanData(&data, stringData))
+      if (laser.getScanData(&data, stringData, &angle_scan))
       {
         for (int i = 0; i < data.dist_len1; i++)
         {
@@ -203,8 +234,10 @@ int main(int argc, char **argv)
         }
 
         std_msgs::String topicData;
-        topicData.data = stringData; //Si falla probar con stringData.c_str()
+        topicData.data = stringData;
         
+        publicarTF(angle_scan);
+
         ROS_DEBUG("Publishing scan string data.");
         scan_string.publish(topicData);
         

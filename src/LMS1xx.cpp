@@ -38,6 +38,9 @@
 #include "LMS1xx/LMS1xx.h"
 #include "console_bridge/console.h"
 
+int MAX_TICS = 65536;  // 2^16 (capacity of a counter of 2-byte word)
+int TICS_PER_REVOLUTION = 5500; /// ??? need to be calibrated !!!
+
 LMS1xx::LMS1xx() : connected_(false)
 {
 }
@@ -241,17 +244,65 @@ void LMS1xx::scanContinous(int start)
   logDebug("RX: %s", buf);
 }
 
-bool LMS1xx::getScanData(scanData* scan_data, std::string& scanStringData)
+int calcularNumeroDeVueltas(int encoder, int& rotation_direction, double& angulo){
+	static int old_ticks = -1;
+	static int numVueltas = 0;	
+
+	if (old_ticks == -1){
+		old_ticks = encoder;
+		return 0;
+	}
+	int delta_ticks = encoder - old_ticks;
+	if (abs(delta_ticks) < TICS_PER_REVOLUTION)  // few ticks (less than one rotation)
+	{
+	    if (delta_ticks > 0)
+	      rotation_direction = +1;
+	    else 
+	      rotation_direction = -1;
+         }
+
+	// counter over/under-flows !! => revolutions
+	if (abs(delta_ticks) > TICS_PER_REVOLUTION)  
+	{
+		if (delta_ticks < 0)
+			numVueltas++;
+		else if (delta_ticks > 0)
+			numVueltas--;
+
+	}
+
+	if (rotation_direction > 0){
+		angulo = (double) ((double)numVueltas*(double)MAX_TICS + (double)encoder)/(double)TICS_PER_REVOLUTION * 2*M_PI;
+	} else {
+		angulo = (double) (numVueltas*MAX_TICS + abs(encoder))/(double)TICS_PER_REVOLUTION * 2*M_PI;
+
+	}
+	old_ticks = encoder;
+	return numVueltas;
+}
+
+void LMS1xx::debugScanData (scanData* data, float *angle_scan) 
+{
+	int direccion_vuelta;
+	double angulo_vuelta;
+	for (int i=0; i<data->NumberEncoders; i++) {
+    //logDebug("%u", data->Encoder[i].Position);
+		int numVuelta =	calcularNumeroDeVueltas(data->Encoder[i].Position, direccion_vuelta, angulo_vuelta);
+    //uint32_t Position = data->Encoder[i].Position;
+	}
+	
+	*angle_scan = angulo_vuelta;
+
+}
+
+bool LMS1xx::getScanData(scanData* scan_data, std::string& scanStringData, float* angle_scan)
 {
   fd_set rfds;
   FD_ZERO(&rfds);
   FD_SET(socket_fd_, &rfds);
 
-  // Block a total of up to 100ms waiting for more data from the laser.
   while (1)
   {
-    // Would be great to depend on linux's behaviour of updating the timeval, but unfortunately
-    // that's non-POSIX (doesn't work on OS X, for example).
     struct timeval tv;
     tv.tv_sec = 0;
     tv.tv_usec = 100000;
@@ -263,23 +314,22 @@ bool LMS1xx::getScanData(scanData* scan_data, std::string& scanStringData)
     {
       buffer_.readFrom(socket_fd_);
 
-      // Will return pointer if a complete message exists in the buffer,
-      // otherwise will return null.
       char* buffer_data = buffer_.getNextBuffer();
-
-      std::string auxString(buffer_data);
-      scanStringData = auxString;
+      if (buffer_data != NULL) {
+        std::string auxString(buffer_data);
+        scanStringData = auxString;
+      } 
 
       if (buffer_data)
       {
         parseScanData(buffer_data, scan_data);
+        debugScanData(scan_data, angle_scan);
         buffer_.popLastBuffer();
         return true;
       }
     }
     else
     {
-      // Select timed out or there was an fd error.
       return false;
     }
   }
@@ -308,10 +358,23 @@ void LMS1xx::parseScanData(char* buffer, scanData* data)
   tok = strtok(NULL, " "); //NumberEncoders
   int NumberEncoders;
   sscanf(tok, "%d", &NumberEncoders);
+  data->NumberEncoders = NumberEncoders;
   for (int i = 0; i < NumberEncoders; i++)
   {
+    /*
     tok = strtok(NULL, " "); //EncoderPosition
     tok = strtok(NULL, " "); //EncoderSpeed
+    */
+
+    tok = strtok(NULL, " "); //EncoderPosition
+    int Position;
+    sscanf(tok, "%X", &Position);    
+    data->Encoder[i].Position = Position;
+
+    tok = strtok(NULL, " "); //EncoderSpeed
+    int Speed;
+    sscanf(tok, "%X", &Speed);
+    data->Encoder[i].Speed = Speed;
   }
 
   tok = strtok(NULL, " "); //NumberChannels16Bit

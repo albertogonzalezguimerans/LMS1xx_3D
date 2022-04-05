@@ -147,7 +147,7 @@ public:
   * @return true if scan was read successfully, false if error or timeout. False implies that higher level
   *         logic should take correct action such as reopening the connection.
   */
-  bool getScanData(scanData* scan_data, std::string* scanStringData);
+  bool getScanData(scanData* scan_data, std::string& scanStringData, float* angle_scan);
 
   /*!
   * @brief Save data permanently.
@@ -161,6 +161,8 @@ public:
   *
   */
   void startDevice();
+
+  void debugScanData (scanData* data, float* angle_scan);
 
 protected:
   /*!

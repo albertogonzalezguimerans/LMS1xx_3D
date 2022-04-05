@@ -8,7 +8,9 @@ add_library(LMS1xx src/LMS1xx.cpp)
 target_link_libraries(LMS1xx ${console_bridge_LIBRARIES})
 
 # Regular catkin package follows.
-find_package(catkin REQUIRED COMPONENTS roscpp sensor_msgs)
+find_package(catkin REQUIRED COMPONENTS roscpp sensor_msgs 
+  tf2 tf2_ros
+)
 catkin_package(CATKIN_DEPENDS roscpp)
 
 include_directories(include ${catkin_INCLUDE_DIRS})
