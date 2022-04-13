@@ -37,7 +37,7 @@
 
 #define DEG2RAD M_PI/180.0
 
-void publicarTF(float phi){
+void publicarTF(float phi, double theta0, double x, double y, double z){
   static tf2_ros::TransformBroadcaster br;
   geometry_msgs::TransformStamped transformStamped;
   // static double theta = 0.0;
@@ -47,12 +47,12 @@ void publicarTF(float phi){
   transformStamped.child_frame_id = "laser"; // CVR 2022-03-22 //  "laser_frame";
 
   // TODO: usar parámetros ROS
-  transformStamped.transform.translation.x = 0.00248743;
-  transformStamped.transform.translation.y = -1.05702;
-  transformStamped.transform.translation.z = 0.60373;
+  transformStamped.transform.translation.x = x; //0.00248743;
+  transformStamped.transform.translation.y = y; //-1.05702;
+  transformStamped.transform.translation.z = z; //0.60373;
   tf2::Quaternion q;
   //0.0180352  0.0741931   0.053058
-  q.setRPY(theta, 0 , 0);
+  q.setRPY(theta0 + theta, 0 , 0);
   transformStamped.transform.rotation.x = q.x();
   transformStamped.transform.rotation.y = q.y();
   transformStamped.transform.rotation.z = q.z();
@@ -70,13 +70,17 @@ int main(int argc, char **argv)
   scanOutputRange outputRange;
   scanDataCfg dataCfg;
   sensor_msgs::LaserScan scan_msg;
-  float angle_scan;
+  float theta;
 
   // parameters
   std::string host;
   std::string frame_id;
   bool inf_range;
   int port;
+  double x;
+  double y;
+  double z;
+  double theta0;
 
   ros::init(argc, argv, "lms1xx");
   ros::NodeHandle nh;
@@ -88,6 +92,10 @@ int main(int argc, char **argv)
   n.param<std::string>("frame_id", frame_id, "laser");
   n.param<bool>("publish_min_range_as_inf", inf_range, false);
   n.param<int>("port", port, 2111);
+  n.param<double>("theta0", theta0, 0);
+  n.param<double>("x", x, 0);
+  n.param<double>("y", y, 0);
+  n.param<double>("z", z, 0);
 
   while (ros::ok())
   {
@@ -212,7 +220,7 @@ int main(int argc, char **argv)
       scanData data;
       std::string stringData;
       ROS_DEBUG("Reading scan data.");
-      if (laser.getScanData(&data, stringData, &angle_scan))
+      if (laser.getScanData(&data, stringData, &theta))
       {
         for (int i = 0; i < data.dist_len1; i++)
         {
@@ -236,7 +244,7 @@ int main(int argc, char **argv)
         std_msgs::String topicData;
         topicData.data = stringData;
         
-        publicarTF(angle_scan);
+        publicarTF(theta, theta0, x, y ,z);
 
         ROS_DEBUG("Publishing scan string data.");
         scan_string.publish(topicData);
