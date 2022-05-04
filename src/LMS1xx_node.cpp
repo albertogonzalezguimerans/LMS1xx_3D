@@ -28,7 +28,7 @@
 #include "sensor_msgs/LaserScan.h"
 #include <limits>
 #include <string>
-#include "std_msgs/String.h" //added
+#include "std_msgs/String.h"
 
 #include <tf2_ros/transform_broadcaster.h>
 #include <geometry_msgs/TransformStamped.h>  
@@ -52,7 +52,7 @@ void publicarTF(float phi, double theta0, double x, double y, double z){
   transformStamped.transform.translation.z = z; //0.60373;
   tf2::Quaternion q;
   //0.0180352  0.0741931   0.053058
-  q.setRPY(theta0 + theta, 0 , 0);
+  q.setRPY(theta0 + theta, 0 , 0); //yaw pitch roll
   transformStamped.transform.rotation.x = q.x();
   transformStamped.transform.rotation.y = q.y();
   transformStamped.transform.rotation.z = q.z();
@@ -86,7 +86,7 @@ int main(int argc, char **argv)
   ros::NodeHandle nh;
   ros::NodeHandle n("~");
   ros::Publisher scan_pub = nh.advertise<sensor_msgs::LaserScan>("scan", 1);
-  ros::Publisher scan_string = nh.advertise<std_msgs::String>("scan_string", 1); //added
+  ros::Publisher scan_string = nh.advertise<std_msgs::String>("scan_string", 1);
 
   n.param<std::string>("host", host, "192.168.1.2");
   n.param<std::string>("frame_id", frame_id, "laser");
@@ -184,25 +184,6 @@ int main(int argc, char **argv)
       ros::Duration(1).sleep();
       continue;
     }
-    /*if (stat == ready_for_measurement)
-    {
-      ROS_DEBUG("Ready status achieved.");
-      break;
-    }
-
-      if (ros::Time::now() > ready_status_timeout)
-      {
-        ROS_WARN("Timed out waiting for ready status. Trying again.");
-        laser.disconnect();
-        continue;
-      }
-
-      if (!ros::ok())
-      {
-        laser.disconnect();
-        return 1;
-      }
-    }*/
 
     ROS_DEBUG("Starting device.");
     laser.startDevice();  // Log out to properly re-enable system after config

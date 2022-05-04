@@ -164,7 +164,7 @@ public:
 
   void debugScanData (scanData* data, float* angle_scan);
 
-protected:
+//protected:
   /*!
   * @brief Receive single scan message.
   * @param data pointer to scanData buffer structure.
