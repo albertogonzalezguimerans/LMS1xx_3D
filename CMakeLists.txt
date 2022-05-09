@@ -9,9 +9,22 @@ target_link_libraries(LMS1xx ${console_bridge_LIBRARIES})
 
 # Regular catkin package follows.
 find_package(catkin REQUIRED COMPONENTS roscpp sensor_msgs 
-  tf2 tf2_ros
+  tf2 tf2_ros laser_geometry tf2_geometry_msgs tf message_generation
+  std_msgs
 )
-catkin_package(CATKIN_DEPENDS roscpp)
+
+add_message_files(
+  FILES
+  ScanIterator.msg
+)
+
+generate_messages (
+  DEPENDENCIES
+  std_msgs
+  sensor_msgs
+)
+
+catkin_package(CATKIN_DEPENDS roscpp message_runtime)
 
 include_directories(include ${catkin_INCLUDE_DIRS})
 add_executable(LMS1xx_node src/LMS1xx_node.cpp)
@@ -19,6 +32,7 @@ target_link_libraries(LMS1xx_node LMS1xx ${catkin_LIBRARIES})
 
 add_executable(Listener src/Listener.cpp)
 target_link_libraries(Listener ${catkin_LIBRARIES})
+add_dependencies(Listener custom_msg_generate_messages_cpp)
 
 add_executable(scanProcessor src/scanProcessor.cpp)
 target_link_libraries(scanProcessor ${catkin_LIBRARIES})

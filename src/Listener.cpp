@@ -2,20 +2,20 @@
 #include "std_msgs/String.h"
 #include "sensor_msgs/LaserScan.h"
 #include <LMS1xx/LMS1xx.h>
-
-scanData scan;
+#include "lms1xx/ScanIterator.h"
 
 ros::Publisher* global_laserScan_pub;
-std::list<sensor_msgs::LaserScan> listScans;
+std::list<lms1xx::ScanIterator> listScans;
 bool saveActivated = false;
 //bool intensidad2000 = false;
 
 void publishList() {
 
   if (listScans.size()>15) {
-    ROS_INFO("LIST size: %i", listScans.size());
-    for (sensor_msgs::LaserScan scan : listScans) {
-      global_laserScan_pub->publish(scan);
+    //ROS_INFO("LIST size: %i", listScans.size());
+    for (lms1xx::ScanIterator scaniterator : listScans) {
+
+      global_laserScan_pub->publish(scaniterator);
     }
     listScans.clear();
   }
@@ -28,7 +28,10 @@ void colectScans(const sensor_msgs::LaserScan data) {
     if (data.intensities[i] > 2000 && data.ranges[i] < 0.5 && data.ranges[i] > 0.3) {
       if (!saveActivated) { saveActivated = true; }
       intensidad2000 = true;
-      listScans.push_back(data);
+      lms1xx::ScanIterator it;
+      it.iterator=i;
+      it.scan=data;
+      listScans.push_back(it);
       //ROS_INFO("BUCLE. valor de i: %i", i);
       //ROS_INFO("num secuecia: %i", data.header.seq);
       break;
@@ -50,7 +53,7 @@ int main(int argc, char **argv)
   ros::NodeHandle n;
 
   ros::Subscriber sub = n.subscribe("scan", 1000, colectScans);
-  ros::Publisher laserScan_pub = n.advertise<sensor_msgs::LaserScan>("list_intensidad_2000", 100);
+  ros::Publisher laserScan_pub = n.advertise<lms1xx::ScanIterator>("list_intensidad_2000", 100);
   global_laserScan_pub = &laserScan_pub;
 
   ros::spin();
