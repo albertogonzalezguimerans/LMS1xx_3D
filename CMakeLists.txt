@@ -9,8 +9,8 @@ target_link_libraries(LMS1xx ${console_bridge_LIBRARIES})
 
 # Regular catkin package follows.
 find_package(catkin REQUIRED COMPONENTS roscpp sensor_msgs 
-  tf2 tf2_ros laser_geometry tf2_geometry_msgs tf message_generation
-  std_msgs
+  tf tf2 tf2_ros laser_geometry tf2_geometry_msgs message_generation
+  std_msgs angles
 )
 
 add_message_files(
