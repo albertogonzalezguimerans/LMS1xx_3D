@@ -32,7 +32,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include "std_msgs/String.h" //added
+#include "std_msgs/String.h"
 #include <string>
 
 #include "LMS1xx/LMS1xx.h"
@@ -322,7 +322,8 @@ bool LMS1xx::getScanData(scanData* scan_data, std::string& scanStringData, float
 
       if (buffer_data)
       {
-        parseScanData(buffer_data, scan_data);
+        scanCfg* cfg;
+        parseScanData(buffer_data, scan_data, cfg);
         debugScanData(scan_data, angle_scan);
         buffer_.popLastBuffer();
         return true;
@@ -335,7 +336,7 @@ bool LMS1xx::getScanData(scanData* scan_data, std::string& scanStringData, float
   }
 }
 
-void LMS1xx::parseScanData(char* buffer, scanData* data)
+void LMS1xx::parseScanData(char* buffer, scanData* data, scanCfg* scanCfg)
 {
   char* tok = strtok(buffer, " "); //Type of command
   tok = strtok(NULL, " "); //Command
@@ -350,7 +351,11 @@ void LMS1xx::parseScanData(char* buffer, scanData* data)
   tok = strtok(NULL, " "); //InputStatus
   tok = strtok(NULL, " "); //OutputStatus
   tok = strtok(NULL, " "); //ReservedByteA
-  tok = strtok(NULL, " "); //ScanningFrequency
+  tok = strtok(NULL, " "); //ScaningFrequency
+  int scaningFrequency;
+  sscanf(tok, "%X", &scaningFrequency); 
+  scanCfg->scaningFrequency=scaningFrequency;
+
   tok = strtok(NULL, " "); //MeasurementFrequency
   tok = strtok(NULL, " ");
   tok = strtok(NULL, " ");
@@ -407,11 +412,21 @@ void LMS1xx::parseScanData(char* buffer, scanData* data)
     tok = strtok(NULL, " "); //ScalingFactor
     tok = strtok(NULL, " "); //ScalingOffset
     tok = strtok(NULL, " "); //Starting angle
+    int startingAngle;
+    sscanf(tok, "%X", &startingAngle);
+
     tok = strtok(NULL, " "); //Angular step width
+    int stepWidth;
+    sscanf(tok, "%X", &stepWidth);
+
     tok = strtok(NULL, " "); //NumberData
     int NumberData;
     sscanf(tok, "%X", &NumberData);
     logDebug("NumberData : %d", NumberData);
+
+    scanCfg->angleResolution=stepWidth;
+    scanCfg->startAngle=startingAngle;
+    scanCfg->stopAngle=(startingAngle+stepWidth*(NumberData-1));
 
     if (type == 0)
     {

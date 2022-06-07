@@ -29,8 +29,6 @@
 #define DEG2RAD M_PI/180.0  
 
 LMS1xx laser;
-scanCfg cfg;
-scanOutputRange outputRange;
 ros::Publisher* global_scanProcessed;
 sensor_msgs::LaserScan scan_msg;
 
@@ -43,7 +41,6 @@ void publicarTF(float phi, double theta0, double x, double y, double z){
   transformStamped.header.frame_id = "map";
   transformStamped.child_frame_id = "laser"; // CVR 2022-03-22 //  "laser_frame";
 
-  // TODO: usar parámetros ROS
   transformStamped.transform.translation.x = x; //0.00248743;
   transformStamped.transform.translation.y = y; //-1.05702;
   transformStamped.transform.translation.z = z; //0.60373;
@@ -61,46 +58,47 @@ void publicarTF(float phi, double theta0, double x, double y, double z){
 
 void processScanData (std_msgs::String scanStringData) {
     
-    //cfg = laser.getScanCfg();
-    //outputRange = laser.getScanOutputRange();
     bool inf_range = false;
 
-    //int angle_range = outputRange.stopAngle - outputRange.startAngle;
-    //int num_values = angle_range / outputRange.angleResolution;
-    //if (angle_range % outputRange.angleResolution == 0)
-    //{
-      // Include endpoint
-    //  ++num_values;
-    //}
-
-    sensor_msgs::LaserScan scan_msg;
-    scan_msg.header.frame_id = "laser";
-    scan_msg.range_min = 0.01;
-    scan_msg.range_max = 20.0;
-    //scan_msg.scan_time = 100.0 / cfg.scaningFrequency;
-    //scan_msg.angle_increment = static_cast<double>(outputRange.angleResolution / 10000.0 * DEG2RAD);
-    //scan_msg.angle_min = static_cast<double>(outputRange.startAngle / 10000.0 * DEG2RAD - M_PI / 2);
-    //scan_msg.angle_max = static_cast<double>(outputRange.stopAngle / 10000.0 * DEG2RAD - M_PI / 2);
-
-    scan_msg.ranges.resize(571); //num_values
-    scan_msg.intensities.resize(571); //num_values
-/*
-    scan_msg.time_increment =
-      (outputRange.angleResolution / 10000.0)
-      / 360.0
-      / (cfg.scaningFrequency / 100.0);
-*/
     ros::Time start = ros::Time::now();
-    
+
     scan_msg.header.stamp = start;
     ++scan_msg.header.seq;
 
     scanData scan_data;
+    scanCfg cfg;
     float theta;
 
-    laser.parseScanData((char*) scanStringData.data.c_str() , &scan_data);
+    laser.parseScanData((char*) scanStringData.data.c_str() , &scan_data, &cfg);
     laser.debugScanData(&scan_data, &theta);
-    
+
+    ROS_INFO("theta: %f", theta);
+
+    int angle_range = cfg.stopAngle - cfg.startAngle;
+    int num_values = angle_range / cfg.angleResolution;
+    if (angle_range % cfg.angleResolution == 0)
+    {
+      // Include endpoint
+      ++num_values;
+    }
+
+    scan_msg.header.frame_id = "laser";
+    scan_msg.range_min = 0.01;
+    scan_msg.range_max = 20.0;
+    scan_msg.scan_time = 100.0 / cfg.scaningFrequency;
+    scan_msg.angle_increment = static_cast<double>(cfg.angleResolution / 10000.0 * DEG2RAD);
+    scan_msg.angle_min = static_cast<double>(cfg.startAngle / 10000.0 * DEG2RAD - M_PI / 2);
+    scan_msg.angle_max = static_cast<double>(cfg.stopAngle / 10000.0 * DEG2RAD - M_PI / 2);
+
+    scan_msg.ranges.resize(571); //num_values
+    scan_msg.intensities.resize(571); //num_values
+
+    scan_msg.time_increment =
+      (cfg.angleResolution / 10000.0)
+      / 360.0
+      / (cfg.scaningFrequency / 100.0);
+
+
     for (int i = 0; i < scan_data.dist_len1; i++)
         {
           float range_data = scan_data.dist1[i] * 0.001;

@@ -169,7 +169,7 @@ public:
   * @brief Receive single scan message.
   * @param data pointer to scanData buffer structure.
   */
-  static void parseScanData(char* buf, scanData* data);
+  static void parseScanData(char* buf, scanData* data, scanCfg* cfg);
 
   bool connected_;
   LMSBuffer buffer_;
