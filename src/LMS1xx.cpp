@@ -34,6 +34,7 @@
 #include <unistd.h>
 #include "std_msgs/String.h"
 #include <string>
+#include <cmath>
 
 #include "LMS1xx/LMS1xx.h"
 #include "console_bridge/console.h"
@@ -247,6 +248,9 @@ void LMS1xx::scanContinous(int start)
 int calcularNumeroDeVueltas(int encoder, int& rotation_direction, double& angulo){
 	static int old_ticks = -1;
 	static int numVueltas = 0;	
+    double ticks, ticks_frac;     // Número total de ticks y su fracción (para "traducir" a ángulo)
+    double numVueltas2;           // Número total de vueltas (giros) del láser sobre su eje
+
 
 	if (old_ticks == -1){
 		old_ticks = encoder;
@@ -272,12 +276,17 @@ int calcularNumeroDeVueltas(int encoder, int& rotation_direction, double& angulo
 	}
 
 	if (rotation_direction > 0){
-		angulo = (double) ((double)numVueltas*(double)MAX_TICS + (double)encoder)/(double)TICS_PER_REVOLUTION * 2*M_PI;
-	} else {
-		angulo = (double) (numVueltas*MAX_TICS + abs(encoder))/(double)TICS_PER_REVOLUTION * 2*M_PI;
-
+		ticks = (((double)numVueltas * (double)MAX_TICS + (double)encoder) / (double)TICS_PER_REVOLUTION);
+    } else {
+		ticks = ((numVueltas*MAX_TICS + abs(encoder))/(double)TICS_PER_REVOLUTION);
 	}
+    ticks_frac = std::modf(ticks, &numVueltas2);
+    angulo = ticks_frac *2*M_PI;
 	old_ticks = encoder;
+
+    printf (" Encoder %5d  dir %d angulo  %5f  vueltas %2d %4.0f  ticks  %f  %f\t",
+            encoder, rotation_direction, angulo, numVueltas, numVueltas2, ticks, ticks_frac);
+    
 	return numVueltas;
 }
 
@@ -380,6 +389,8 @@ void LMS1xx::parseScanData(char* buffer, scanData* data, scanCfg* scanCfg)
     int Speed;
     sscanf(tok, "%X", &Speed);
     data->Encoder[i].Speed = Speed;
+    
+    //   printf("Position: %5d  data %5d,  Speed: %5d ", Position, data->Encoder[i].Position, Speed);
   }
 
   tok = strtok(NULL, " "); //NumberChannels16Bit
