@@ -72,7 +72,7 @@ void processScanData (std_msgs::String scanStringData) {
     laser.parseScanData((char*) scanStringData.data.c_str() , &scan_data, &cfg);
     laser.debugScanData(&scan_data, &theta);
 
-    ROS_INFO("theta: %f", theta);
+    ROS_INFO("theta: %f;  scan frec %d; points %d; msg %.1f", theta, cfg.scaningFrequency, scan_data.dist_len1, (scan_msg.angle_max-scan_msg.angle_min)/scan_msg.angle_increment);
 
     int angle_range = cfg.stopAngle - cfg.startAngle;
     int num_values = angle_range / cfg.angleResolution;
@@ -85,18 +85,19 @@ void processScanData (std_msgs::String scanStringData) {
     scan_msg.header.frame_id = "laser";
     scan_msg.range_min = 0.01;
     scan_msg.range_max = 20.0;
-    scan_msg.scan_time = 100.0 / cfg.scaningFrequency;
+    scan_msg.scan_time = 1.0 / (float) cfg.scaningFrequency;  // mal medido !!
+    //scan_msg.scan_time = 0.02;
     scan_msg.angle_increment = static_cast<double>(cfg.angleResolution / 10000.0 * DEG2RAD);
     scan_msg.angle_min = static_cast<double>(cfg.startAngle / 10000.0 * DEG2RAD - M_PI / 2);
     scan_msg.angle_max = static_cast<double>(cfg.stopAngle / 10000.0 * DEG2RAD - M_PI / 2);
 
-    scan_msg.ranges.resize(571); //num_values
-    scan_msg.intensities.resize(571); //num_values
+    scan_msg.ranges.resize(541); //num_values
+    scan_msg.intensities.resize(541); //num_values
 
-    scan_msg.time_increment =
-      (cfg.angleResolution / 10000.0)
+    scan_msg.time_increment =  /* 0.0; */
+      ((float) cfg.angleResolution / 10000.0)
       / 360.0
-      / (cfg.scaningFrequency / 100.0);
+      / ( (float) cfg.scaningFrequency / 100.0);  /* */
 
 
     for (int i = 0; i < scan_data.dist_len1; i++)

@@ -362,7 +362,7 @@ void LMS1xx::parseScanData(char* buffer, scanData* data, scanCfg* scanCfg)
   tok = strtok(NULL, " "); //ReservedByteA
   tok = strtok(NULL, " "); //ScaningFrequency
   int scaningFrequency;
-  sscanf(tok, "%X", &scaningFrequency); 
+  sscanf(tok, "%d", &scaningFrequency); 
   scanCfg->scaningFrequency=scaningFrequency;
 
   tok = strtok(NULL, " "); //MeasurementFrequency
