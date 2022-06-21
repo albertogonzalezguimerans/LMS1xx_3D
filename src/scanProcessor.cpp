@@ -91,8 +91,8 @@ void processScanData (std_msgs::String scanStringData) {
     scan_msg.angle_min = static_cast<double>(cfg.startAngle / 10000.0 * DEG2RAD - M_PI / 2);
     scan_msg.angle_max = static_cast<double>(cfg.stopAngle / 10000.0 * DEG2RAD - M_PI / 2);
 
-    scan_msg.ranges.resize(541); //num_values
-    scan_msg.intensities.resize(541); //num_values
+    scan_msg.ranges.resize(scan_data.dist_len1); // 541); //num_values
+    scan_msg.intensities.resize(scan_data.dist_len1); // 541); //num_values
 
     scan_msg.time_increment =  /* 0.0; */
       ((float) cfg.angleResolution / 10000.0)
